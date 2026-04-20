@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { LogOut, Camera, Loader2 } from "lucide-react";
+import { LogOut, Camera, Loader2, ScanFace, CheckCircle2 } from "lucide-react";
+import SelfieCapture from "@/components/SelfieCapture";
 
 interface Employee {
   full_name: string;
@@ -23,12 +24,28 @@ export default function Profile() {
   const [emp, setEmp] = useState<Employee | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
+  const [hasFace, setHasFace] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     supabase.from("employees").select("*").eq("user_id", user.id).maybeSingle()
-      .then(({ data }) => setEmp(data as Employee | null));
+      .then(({ data }) => {
+        setEmp(data as Employee | null);
+        const fd: any = (data as any)?.face_descriptor;
+        setHasFace(Array.isArray(fd) && fd.length > 0);
+      });
   }, [user]);
+
+  const enrollFace = async ({ descriptor }: { descriptor: number[] | null }) => {
+    if (!user) return;
+    if (!descriptor) { toast.error("No face detected"); return; }
+    const { error } = await supabase.from("employees").update({ face_descriptor: descriptor as any }).eq("user_id", user.id);
+    if (error) { toast.error(error.message); return; }
+    setHasFace(true);
+    setEnrolling(false);
+    toast.success("Face enrolled — you can now mark attendance");
+  };
 
   const save = async () => {
     if (!user || !emp) return;
@@ -110,6 +127,29 @@ export default function Profile() {
         <Button onClick={save} disabled={saving} className="w-full gradient-accent text-primary-foreground font-semibold">
           {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save changes
         </Button>
+      </div>
+
+      {/* Face enrollment */}
+      <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${hasFace ? "bg-primary/15" : "bg-secondary"}`}>
+              <ScanFace className={`h-5 w-5 ${hasFace ? "text-primary" : "text-muted-foreground"}`} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold">Face recognition</p>
+              <p className="text-xs text-muted-foreground">{hasFace ? "Enrolled — used to verify attendance" : "Enroll your face to enable selfie attendance"}</p>
+            </div>
+          </div>
+          {hasFace && <CheckCircle2 className="h-5 w-5 text-primary" />}
+        </div>
+        {enrolling ? (
+          <SelfieCapture onCapture={enrollFace} onCancel={() => setEnrolling(false)} requireFace />
+        ) : (
+          <Button onClick={() => setEnrolling(true)} variant="outline" className="w-full border-primary/40 text-primary hover:bg-primary/10 hover:text-primary">
+            <Camera className="h-4 w-4" /> {hasFace ? "Re-enroll face" : "Enroll face now"}
+          </Button>
+        )}
       </div>
 
       <Button onClick={signOut} variant="outline" className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive">
