@@ -483,7 +483,7 @@ export default function AdminConsole() {
           </div>
           <p className="text-xs text-muted-foreground">{filteredEmps.length} employees</p>
           {filteredEmps.map((e) => (
-            <EmployeeCard key={e.id} emp={e} role={roleMap.get(e.user_id) ?? "employee"} onRoleChange={changeRole} onUpdate={updateEmployee} />
+            <EmployeeCard key={e.id} emp={e} role={roleMap.get(e.user_id) ?? "employee"} onRoleChange={changeRole} onUpdate={updateEmployee} onDelete={deleteEmployee} />
           ))}
         </TabsContent>
 
