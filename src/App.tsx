@@ -10,7 +10,11 @@ import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import Profile from "@/pages/Profile";
 import Attendance from "@/pages/Attendance";
-import ComingSoon from "@/pages/ComingSoon";
+import Leaves from "@/pages/Leaves";
+import Payslips from "@/pages/Payslips";
+import Documents from "@/pages/Documents";
+import Reimbursements from "@/pages/Reimbursements";
+import AdminConsole from "@/pages/AdminConsole";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -27,12 +31,12 @@ const App = () => (
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/attendance" element={<Attendance />} />
-              <Route path="/leaves" element={<ComingSoon title="Leaves" description="Apply for leave with approval flow" />} />
-              <Route path="/payslip" element={<ComingSoon title="Payslip" description="View and download monthly payslips" />} />
-              <Route path="/documents" element={<ComingSoon title="Documents & News" description="Company documents and announcements" />} />
-              <Route path="/reimbursements" element={<ComingSoon title="Reimbursements" description="Submit and track expense claims" />} />
+              <Route path="/leaves" element={<Leaves />} />
+              <Route path="/payslip" element={<Payslips />} />
+              <Route path="/documents" element={<Documents />} />
+              <Route path="/reimbursements" element={<Reimbursements />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/admin" element={<ProtectedRoute adminOnly><ComingSoon title="Admin Console" description="Manage employees, approvals, and settings" /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute adminOnly><AdminConsole /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
