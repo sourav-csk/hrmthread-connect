@@ -629,7 +629,7 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
                 {emp.date_of_joining && <div className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" /> Joined {format(parseISO(emp.date_of_joining), "d MMM yyyy")}</div>}
                 <div className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" /> Leave balance: <span className="text-foreground font-medium">{emp.leave_balance} days</span></div>
               </div>
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
                 <Button size="sm" variant="outline" onClick={() => setEditing(true)} className="text-xs gap-1">
                   <Edit2 className="h-3 w-3" /> Edit
                 </Button>
@@ -642,6 +642,27 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
                     <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="text-xs gap-1 border-destructive/40 text-destructive hover:bg-destructive/10">
+                      <Trash2 className="h-3 w-3" /> Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-card border-border">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete {emp.full_name}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove the employee and all their attendance, leave, reimbursement, and payslip records. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => onDelete(emp)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </>
           ) : (
