@@ -11,10 +11,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Loader2, Users, CalendarDays, CheckCircle2, XCircle, Clock,
   Upload, FileText, Megaphone, IndianRupee, Search, LayoutDashboard,
   Receipt, TrendingUp, UserCog, Eye, ChevronDown, ChevronRight,
-  Mail, Phone, Building2, Briefcase, Hash, Shield, Edit2, Save
+  Mail, Phone, Building2, Briefcase, Hash, Shield, Edit2, Save, Trash2
 } from "lucide-react";
 import { format, parseISO, differenceInCalendarDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
 
@@ -166,6 +170,26 @@ export default function AdminConsole() {
     setEmployees((prev) => prev.map((e) => e.id === empId ? { ...e, ...updates } : e));
     toast.success("Employee updated");
     return true;
+  };
+
+  const deleteEmployee = async (emp: Employee) => {
+    try {
+      // Delete related data first
+      await Promise.all([
+        supabase.from("attendance").delete().eq("user_id", emp.user_id),
+        supabase.from("leaves").delete().eq("user_id", emp.user_id),
+        supabase.from("reimbursements").delete().eq("user_id", emp.user_id),
+        supabase.from("payslips").delete().eq("user_id", emp.user_id),
+        supabase.from("user_roles").delete().eq("user_id", emp.user_id),
+      ]);
+      const { error } = await supabase.from("employees").delete().eq("id", emp.id);
+      if (error) throw error;
+      setEmployees((prev) => prev.filter((e) => e.id !== emp.id));
+      setRoles((prev) => prev.filter((r) => r.user_id !== emp.user_id));
+      toast.success(`${emp.full_name} has been removed`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to delete employee");
+    }
   };
 
   const uploadPayslip = async () => {
@@ -459,7 +483,7 @@ export default function AdminConsole() {
           </div>
           <p className="text-xs text-muted-foreground">{filteredEmps.length} employees</p>
           {filteredEmps.map((e) => (
-            <EmployeeCard key={e.id} emp={e} role={roleMap.get(e.user_id) ?? "employee"} onRoleChange={changeRole} onUpdate={updateEmployee} />
+            <EmployeeCard key={e.id} emp={e} role={roleMap.get(e.user_id) ?? "employee"} onRoleChange={changeRole} onUpdate={updateEmployee} onDelete={deleteEmployee} />
           ))}
         </TabsContent>
 
@@ -548,10 +572,11 @@ function StatCard({ icon: Icon, label, value, color, onClick }: { icon: any; lab
   );
 }
 
-function EmployeeCard({ emp, role, onRoleChange, onUpdate }: {
+function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
   emp: Employee; role: "admin" | "employee";
   onRoleChange: (uid: string, r: "admin" | "employee") => void;
   onUpdate: (id: string, updates: Partial<Employee>) => Promise<boolean>;
+  onDelete: (emp: Employee) => Promise<void>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -604,7 +629,7 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate }: {
                 {emp.date_of_joining && <div className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" /> Joined {format(parseISO(emp.date_of_joining), "d MMM yyyy")}</div>}
                 <div className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" /> Leave balance: <span className="text-foreground font-medium">{emp.leave_balance} days</span></div>
               </div>
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
                 <Button size="sm" variant="outline" onClick={() => setEditing(true)} className="text-xs gap-1">
                   <Edit2 className="h-3 w-3" /> Edit
                 </Button>
@@ -617,6 +642,27 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate }: {
                     <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="text-xs gap-1 border-destructive/40 text-destructive hover:bg-destructive/10">
+                      <Trash2 className="h-3 w-3" /> Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-card border-border">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete {emp.full_name}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove the employee and all their attendance, leave, reimbursement, and payslip records. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => onDelete(emp)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </>
           ) : (
