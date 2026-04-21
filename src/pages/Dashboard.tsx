@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, MapPin, Camera, ArrowRight, CalendarDays, Wallet, FileText } from "lucide-react";
+import { Bell, Camera, ArrowRight, CalendarDays, Wallet, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 
@@ -103,7 +103,7 @@ export default function Dashboard() {
             </div>
 
             <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
-              <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> Geo verified</span>
+              <span className="flex items-center gap-1.5"><Camera className="h-3.5 w-3.5" /> Verified</span>
               <span className="flex items-center gap-1.5"><Camera className="h-3.5 w-3.5" /> Selfie + face match</span>
             </div>
 
