@@ -11,10 +11,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Loader2, Users, CalendarDays, CheckCircle2, XCircle, Clock,
   Upload, FileText, Megaphone, IndianRupee, Search, LayoutDashboard,
   Receipt, TrendingUp, UserCog, Eye, ChevronDown, ChevronRight,
-  Mail, Phone, Building2, Briefcase, Hash, Shield, Edit2, Save
+  Mail, Phone, Building2, Briefcase, Hash, Shield, Edit2, Save, Trash2
 } from "lucide-react";
 import { format, parseISO, differenceInCalendarDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
 
