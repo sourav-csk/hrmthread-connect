@@ -172,6 +172,26 @@ export default function AdminConsole() {
     return true;
   };
 
+  const deleteEmployee = async (emp: Employee) => {
+    try {
+      // Delete related data first
+      await Promise.all([
+        supabase.from("attendance").delete().eq("user_id", emp.user_id),
+        supabase.from("leaves").delete().eq("user_id", emp.user_id),
+        supabase.from("reimbursements").delete().eq("user_id", emp.user_id),
+        supabase.from("payslips").delete().eq("user_id", emp.user_id),
+        supabase.from("user_roles").delete().eq("user_id", emp.user_id),
+      ]);
+      const { error } = await supabase.from("employees").delete().eq("id", emp.id);
+      if (error) throw error;
+      setEmployees((prev) => prev.filter((e) => e.id !== emp.id));
+      setRoles((prev) => prev.filter((r) => r.user_id !== emp.user_id));
+      toast.success(`${emp.full_name} has been removed`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to delete employee");
+    }
+  };
+
   const uploadPayslip = async () => {
     if (!payUserId || !payFile) { toast.error("Select employee and upload PDF"); return; }
     setPaySubmitting(true);
