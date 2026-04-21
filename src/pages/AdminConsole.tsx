@@ -572,10 +572,11 @@ function StatCard({ icon: Icon, label, value, color, onClick }: { icon: any; lab
   );
 }
 
-function EmployeeCard({ emp, role, onRoleChange, onUpdate }: {
+function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
   emp: Employee; role: "admin" | "employee";
   onRoleChange: (uid: string, r: "admin" | "employee") => void;
   onUpdate: (id: string, updates: Partial<Employee>) => Promise<boolean>;
+  onDelete: (emp: Employee) => Promise<void>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
