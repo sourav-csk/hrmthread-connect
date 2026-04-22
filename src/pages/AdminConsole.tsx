@@ -262,6 +262,22 @@ export default function AdminConsole() {
     setDocSubmitting(false);
   };
 
+  const deletePayslip = async (ps: PayslipRow) => {
+    await supabase.storage.from("payslips").remove([ps.file_path]);
+    const { error } = await supabase.from("payslips").delete().eq("id", ps.id);
+    if (error) { toast.error(error.message); return; }
+    setAllPayslips((prev) => prev.filter((p) => p.id !== ps.id));
+    toast.success("Payslip deleted");
+  };
+
+  const deleteDocument = async (doc: DocRow) => {
+    if (doc.file_path) await supabase.storage.from("documents").remove([doc.file_path]);
+    const { error } = await supabase.from("documents").delete().eq("id", doc.id);
+    if (error) { toast.error(error.message); return; }
+    setAllDocs((prev) => prev.filter((d) => d.id !== doc.id));
+    toast.success(`${doc.doc_type === "news" ? "News" : "Document"} deleted`);
+  };
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <Loader2 className="h-6 w-6 animate-spin text-primary" />
