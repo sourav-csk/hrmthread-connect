@@ -219,13 +219,14 @@ export default function AdminConsole() {
       const path = `${payUserId}/${payYear}-${payMonth.padStart(2, "0")}.pdf`;
       const { error: upErr } = await supabase.storage.from("payslips").upload(path, payFile, { upsert: true, contentType: "application/pdf" });
       if (upErr) throw upErr;
-      const { error } = await supabase.from("payslips").insert({
+      const { data: inserted, error } = await supabase.from("payslips").insert({
         user_id: payUserId, month: parseInt(payMonth), year: parseInt(payYear),
         gross_salary: payGross ? parseFloat(payGross) : null,
         net_salary: payNet ? parseFloat(payNet) : null,
         file_path: path, uploaded_by: user!.id,
-      });
+      }).select().single();
       if (error) throw error;
+      setAllPayslips((prev) => [inserted as PayslipRow, ...prev]);
       toast.success("Payslip uploaded");
       setPayOpen(false); setPayFile(null); setPayGross(""); setPayNet("");
     } catch (e: any) { toast.error(e.message ?? "Upload failed"); }
