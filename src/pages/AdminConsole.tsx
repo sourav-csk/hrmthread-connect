@@ -47,6 +47,14 @@ interface AttRow {
 interface UserRole {
   id: string; user_id: string; role: "admin" | "employee";
 }
+interface PayslipRow {
+  id: string; user_id: string; month: number; year: number;
+  gross_salary: number | null; net_salary: number | null; file_path: string; created_at: string;
+}
+interface DocRow {
+  id: string; title: string; description: string | null; doc_type: string;
+  file_path: string | null; created_at: string;
+}
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-warning/15 text-warning border-warning/30",
