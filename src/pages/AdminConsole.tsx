@@ -236,12 +236,12 @@ export default function AdminConsole() {
   const postNews = async () => {
     if (!newsTitle.trim()) { toast.error("Title is required"); return; }
     setNewsSubmitting(true);
-    const { error } = await supabase.from("documents").insert({
+    const { data: inserted, error } = await supabase.from("documents").insert({
       title: newsTitle.trim(), description: newsDesc.trim() || null,
       doc_type: "news" as const, uploaded_by: user!.id,
-    });
+    }).select().single();
     if (error) toast.error(error.message);
-    else { toast.success("News posted"); setNewsOpen(false); setNewsTitle(""); setNewsDesc(""); }
+    else { setAllDocs((prev) => [inserted as DocRow, ...prev]); toast.success("News posted"); setNewsOpen(false); setNewsTitle(""); setNewsDesc(""); }
     setNewsSubmitting(false);
   };
 
