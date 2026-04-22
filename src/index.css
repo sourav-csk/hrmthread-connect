@@ -1,92 +1,108 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* HRMThread Design System — Editorial Slate + Teal accent.
-   All colors HSL. Define tokens here, never inline in components. */
-
 @layer base {
   :root {
-    /* Brand: deep slate canvas, soft elevated surfaces, single teal accent */
-    --background: 222 38% 8%;
-    --foreground: 210 30% 96%;
+    --background: 220 16% 96%;
+    --foreground: 220 20% 14%;
 
-    --card: 222 32% 12%;
-    --card-foreground: 210 30% 96%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 14%;
 
-    --popover: 222 34% 11%;
-    --popover-foreground: 210 30% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 14%;
 
-    --primary: 172 76% 56%;          /* teal */
-    --primary-foreground: 222 50% 8%;
-    --primary-glow: 172 90% 65%;
+    --primary: 220 72% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 220 80% 60%;
 
-    --secondary: 222 26% 18%;
-    --secondary-foreground: 210 30% 96%;
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 220 20% 14%;
 
-    --muted: 222 22% 16%;
-    --muted-foreground: 215 18% 65%;
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 172 70% 50%;
-    --accent-foreground: 222 50% 8%;
+    --accent: 220 14% 92%;
+    --accent-foreground: 220 20% 14%;
 
-    --destructive: 0 72% 58%;
-    --destructive-foreground: 210 30% 98%;
+    --destructive: 0 68% 52%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 152 64% 50%;
-    --warning: 38 92% 60%;
+    --success: 152 56% 42%;
+    --warning: 38 92% 50%;
 
-    --border: 222 22% 20%;
-    --input: 222 26% 16%;
-    --ring: 172 76% 56%;
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 220 72% 50%;
 
-    --radius: 0.875rem;
+    --radius: 0.625rem;
 
-    /* Surfaces & gradients */
-    --surface-1: 222 30% 11%;
-    --surface-2: 222 26% 14%;
-    --surface-3: 222 24% 17%;
+    --surface-1: 220 14% 97%;
+    --surface-2: 220 14% 94%;
+    --surface-3: 220 14% 90%;
 
-    --gradient-hero: linear-gradient(135deg, hsl(222 40% 10%), hsl(222 36% 14%));
-    --gradient-accent: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-card: linear-gradient(180deg, hsl(222 30% 13%), hsl(222 32% 11%));
+    --shadow-elevated: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
 
-    --shadow-elevated: 0 12px 40px -12px hsl(222 60% 2% / 0.6);
-    --shadow-glow: 0 0 30px hsl(var(--primary) / 0.25);
-
-    --sidebar-background: 222 32% 10%;
-    --sidebar-foreground: 210 25% 90%;
-    --sidebar-primary: 172 76% 56%;
-    --sidebar-primary-foreground: 222 50% 8%;
-    --sidebar-accent: 222 26% 16%;
-    --sidebar-accent-foreground: 210 30% 96%;
-    --sidebar-border: 222 22% 18%;
-    --sidebar-ring: 172 76% 56%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 14%;
+    --sidebar-primary: 220 72% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 220 20% 14%;
+    --sidebar-border: 220 13% 88%;
+    --sidebar-ring: 220 72% 50%;
   }
 
-  /* Single dark editorial theme — .dark mirrors :root for shadcn compatibility */
   .dark {
-    --background: 222 38% 8%;
-    --foreground: 210 30% 96%;
-    --card: 222 32% 12%;
-    --card-foreground: 210 30% 96%;
-    --popover: 222 34% 11%;
-    --popover-foreground: 210 30% 96%;
-    --primary: 172 76% 56%;
-    --primary-foreground: 222 50% 8%;
-    --secondary: 222 26% 18%;
-    --secondary-foreground: 210 30% 96%;
-    --muted: 222 22% 16%;
-    --muted-foreground: 215 18% 65%;
-    --accent: 172 70% 50%;
-    --accent-foreground: 222 50% 8%;
-    --destructive: 0 72% 58%;
-    --destructive-foreground: 210 30% 98%;
-    --border: 222 22% 20%;
-    --input: 222 26% 16%;
-    --ring: 172 76% 56%;
+    --background: 224 20% 7%;
+    --foreground: 210 20% 94%;
+
+    --card: 224 18% 10%;
+    --card-foreground: 210 20% 94%;
+
+    --popover: 224 18% 10%;
+    --popover-foreground: 210 20% 94%;
+
+    --primary: 217 72% 58%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 80% 65%;
+
+    --secondary: 224 14% 15%;
+    --secondary-foreground: 210 20% 94%;
+
+    --muted: 224 12% 16%;
+    --muted-foreground: 215 12% 55%;
+
+    --accent: 224 14% 15%;
+    --accent-foreground: 210 20% 94%;
+
+    --destructive: 0 62% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 56% 45%;
+    --warning: 38 90% 55%;
+
+    --border: 224 12% 18%;
+    --input: 224 14% 15%;
+    --ring: 217 72% 58%;
+
+    --surface-1: 224 18% 9%;
+    --surface-2: 224 16% 12%;
+    --surface-3: 224 14% 15%;
+
+    --shadow-elevated: 0 2px 8px 0 rgb(0 0 0 / 0.3);
+
+    --sidebar-background: 224 18% 9%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 217 72% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 224 14% 14%;
+    --sidebar-accent-foreground: 210 20% 94%;
+    --sidebar-border: 224 12% 16%;
+    --sidebar-ring: 217 72% 58%;
   }
 }
 
@@ -95,16 +111,12 @@
   html, body, #root { height: 100%; }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-feature-settings: 'ss01', 'cv11';
+    font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
 @layer utilities {
-  .gradient-accent { background-image: var(--gradient-accent); }
-  .gradient-card { background-image: var(--gradient-card); }
   .shadow-elevated { box-shadow: var(--shadow-elevated); }
-  .shadow-glow { box-shadow: var(--shadow-glow); }
   .text-balance { text-wrap: balance; }
   .tabular { font-variant-numeric: tabular-nums; }
 }
