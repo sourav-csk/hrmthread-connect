@@ -759,6 +759,9 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
                 <Button size="sm" variant="outline" onClick={() => setEditing(true)} className="text-xs gap-1">
                   <Edit2 className="h-3 w-3" /> Edit
                 </Button>
+                <Button size="sm" variant="outline" onClick={() => setHistoryOpen(true)} className="text-xs gap-1">
+                  <CalendarDays className="h-3 w-3" /> Leave History
+                </Button>
                 <Select value={role} onValueChange={(v) => onRoleChange(emp.user_id, v as "admin" | "employee")}>
                   <SelectTrigger className="h-8 text-xs w-32">
                     <Shield className="h-3 w-3 mr-1" /><SelectValue />
