@@ -152,12 +152,18 @@ export default function AdminConsole() {
 
   /* ─── Actions ─── */
   const handleLeaveAction = async (id: string, action: "approved" | "rejected", notes: string) => {
+    const leave = allLeaves.find((l) => l.id === id);
     const { error } = await supabase.from("leaves").update({
       status: action, reviewed_by: user!.id, reviewed_at: new Date().toISOString(),
       reviewer_notes: notes || null,
     }).eq("id", id);
     if (error) { toast.error(error.message); return; }
     setAllLeaves((prev) => prev.map((l) => l.id === id ? { ...l, status: action, reviewer_notes: notes || null } : l));
+    // Reflect balance change in local state (trigger handles DB)
+    if (leave && leave.leave_type !== "unpaid" && action === "approved" && leave.status === "pending") {
+      const days = differenceInCalendarDays(parseISO(leave.end_date), parseISO(leave.start_date)) + 1;
+      setEmployees((prev) => prev.map((e) => e.user_id === leave.user_id ? { ...e, leave_balance: Math.max(e.leave_balance - days, 0) } : e));
+    }
     toast.success(`Leave ${action}`);
   };
 
