@@ -21,6 +21,7 @@ import {
   Mail, Phone, Building2, Briefcase, Hash, Shield, Edit2, Save, Trash2
 } from "lucide-react";
 import { format, parseISO, differenceInCalendarDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import LeaveBalanceHistory from "@/components/LeaveBalanceHistory";
 
 /* ─── Types ─── */
 interface Employee {
