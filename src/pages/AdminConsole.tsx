@@ -75,6 +75,8 @@ export default function AdminConsole() {
   const [allReimbs, setAllReimbs] = useState<ReimbReq[]>([]);
   const [todayAttendance, setTodayAttendance] = useState<AttRow[]>([]);
   const [roles, setRoles] = useState<UserRole[]>([]);
+  const [allPayslips, setAllPayslips] = useState<PayslipRow[]>([]);
+  const [allDocs, setAllDocs] = useState<DocRow[]>([]);
   const [searchQ, setSearchQ] = useState("");
 
   // Payslip upload
