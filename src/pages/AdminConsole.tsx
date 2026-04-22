@@ -813,6 +813,7 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
           )}
         </div>
       )}
+      <LeaveBalanceHistory open={historyOpen} onOpenChange={setHistoryOpen} userId={emp.user_id} employeeName={emp.full_name} currentBalance={emp.leave_balance} />
     </div>
   );
 }
