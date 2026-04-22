@@ -110,18 +110,22 @@ export default function AdminConsole() {
     if (!user) return;
     const today = format(new Date(), "yyyy-MM-dd");
     (async () => {
-      const [{ data: e }, { data: l }, { data: r }, { data: a }, { data: ro }] = await Promise.all([
+      const [{ data: e }, { data: l }, { data: r }, { data: a }, { data: ro }, { data: ps }, { data: docs }] = await Promise.all([
         supabase.from("employees").select("*").order("full_name"),
         supabase.from("leaves").select("*").order("created_at", { ascending: false }),
         supabase.from("reimbursements").select("*").order("created_at", { ascending: false }),
         supabase.from("attendance").select("*").eq("date", today).order("check_in_at", { ascending: true }),
         supabase.from("user_roles").select("*"),
+        supabase.from("payslips").select("*").order("created_at", { ascending: false }),
+        supabase.from("documents").select("*").order("created_at", { ascending: false }),
       ]);
       setEmployees((e ?? []) as Employee[]);
       setAllLeaves((l ?? []) as LeaveReq[]);
       setAllReimbs((r ?? []) as ReimbReq[]);
       setTodayAttendance((a ?? []) as AttRow[]);
       setRoles((ro ?? []) as UserRole[]);
+      setAllPayslips((ps ?? []) as PayslipRow[]);
+      setAllDocs((docs ?? []) as DocRow[]);
       setLoading(false);
     })();
   }, [user]);
