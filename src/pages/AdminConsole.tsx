@@ -291,7 +291,7 @@ export default function AdminConsole() {
     <div className="px-4 pt-6 pb-6 space-y-5 max-w-2xl mx-auto">
       {/* Header */}
       <header className="flex items-center gap-3">
-        <div className="h-11 w-11 rounded-2xl gradient-accent flex items-center justify-center shadow-glow">
+        <div className="h-11 w-11 rounded-xl gradient-accent flex items-center justify-center ">
           <Shield className="h-5 w-5 text-primary-foreground" />
         </div>
         <div>
@@ -310,7 +310,7 @@ export default function AdminConsole() {
 
       {/* Tabs */}
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-5 bg-secondary/60 h-auto">
+        <TabsList className="w-full grid grid-cols-5  h-auto">
           <TabsTrigger value="overview" className="text-[11px] py-2.5 flex-col gap-0.5">
             <LayoutDashboard className="h-3.5 w-3.5" /> Overview
           </TabsTrigger>
@@ -333,7 +333,7 @@ export default function AdminConsole() {
         {/* ══════════ OVERVIEW TAB ══════════ */}
         <TabsContent value="overview" className="space-y-4 mt-4">
           {/* Today's attendance */}
-          <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+          <div className="rounded-xl bg-card border border-border p-4 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <CalendarDays className="h-4 w-4 text-primary" /> Today's Attendance
@@ -349,7 +349,7 @@ export default function AdminConsole() {
                 {todayAttendance.map((a) => {
                   const emp = empMap.get(a.user_id);
                   return (
-                    <div key={a.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-secondary/40">
+                    <div key={a.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted">
                       <div className="flex items-center gap-2.5">
                         <div className="h-7 w-7 rounded-full bg-secondary flex items-center justify-center text-[10px] font-semibold">
                           {(emp?.full_name ?? "?").split(" ").map(s => s[0]).slice(0, 2).join("").toUpperCase()}
@@ -377,7 +377,7 @@ export default function AdminConsole() {
 
           {/* Recent pending items */}
           {pendingLeaves > 0 && (
-            <div className="rounded-2xl bg-card border border-warning/20 p-4 space-y-2">
+            <div className="rounded-xl bg-card border border-warning/20 p-4 space-y-2">
               <h3 className="text-sm font-semibold flex items-center gap-2 text-warning">
                 <Clock className="h-4 w-4" /> {pendingLeaves} leave request{pendingLeaves > 1 ? "s" : ""} pending
               </h3>
@@ -389,7 +389,7 @@ export default function AdminConsole() {
           )}
 
           {pendingReimbs > 0 && (
-            <div className="rounded-2xl bg-card border border-warning/20 p-4 space-y-2">
+            <div className="rounded-xl bg-card border border-warning/20 p-4 space-y-2">
               <h3 className="text-sm font-semibold flex items-center gap-2 text-warning">
                 <IndianRupee className="h-4 w-4" /> {pendingReimbs} reimbursement{pendingReimbs > 1 ? "s" : ""} pending
               </h3>
@@ -401,12 +401,12 @@ export default function AdminConsole() {
           )}
 
           {/* Quick actions */}
-          <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+          <div className="rounded-xl bg-card border border-border p-4 space-y-3">
             <h3 className="text-sm font-semibold">Quick Actions</h3>
             <div className="grid grid-cols-3 gap-2">
               <Dialog open={payOpen} onOpenChange={setPayOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/40 text-xs">
+                  <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/30 text-xs">
                     <IndianRupee className="h-4 w-4 text-primary" /> Upload Payslip
                   </Button>
                 </DialogTrigger>
@@ -448,13 +448,13 @@ export default function AdminConsole() {
                     </div>
                     <div className="space-y-2">
                       <Label>PDF file</Label>
-                      <label className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-border bg-secondary/30 cursor-pointer hover:border-primary/40 transition-colors">
+                      <label className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-border bg-muted/50 cursor-pointer hover:border-primary/30 transition-colors">
                         <Upload className="h-5 w-5 text-muted-foreground" />
                         <span className="text-sm text-muted-foreground">{payFile ? payFile.name : "Select payslip PDF"}</span>
                         <input type="file" accept=".pdf" className="hidden" onChange={(e) => setPayFile(e.target.files?.[0] ?? null)} />
                       </label>
                     </div>
-                    <Button onClick={uploadPayslip} disabled={paySubmitting} className="w-full gradient-accent text-primary-foreground font-semibold">
+                    <Button onClick={uploadPayslip} disabled={paySubmitting} className="w-full font-medium">
                       {paySubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Upload
                     </Button>
                   </div>
@@ -463,7 +463,7 @@ export default function AdminConsole() {
 
               <Dialog open={newsOpen} onOpenChange={setNewsOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/40 text-xs">
+                  <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/30 text-xs">
                     <Megaphone className="h-4 w-4 text-primary" /> Post News
                   </Button>
                 </DialogTrigger>
@@ -475,7 +475,7 @@ export default function AdminConsole() {
                   <div className="space-y-4 mt-2">
                     <div className="space-y-2"><Label>Title</Label><Input value={newsTitle} onChange={(e) => setNewsTitle(e.target.value)} placeholder="News headline..." /></div>
                     <div className="space-y-2"><Label>Description</Label><Textarea value={newsDesc} onChange={(e) => setNewsDesc(e.target.value)} placeholder="Details..." rows={4} /></div>
-                    <Button onClick={postNews} disabled={newsSubmitting} className="w-full gradient-accent text-primary-foreground font-semibold">
+                    <Button onClick={postNews} disabled={newsSubmitting} className="w-full font-medium">
                       {newsSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Post
                     </Button>
                   </div>
@@ -484,7 +484,7 @@ export default function AdminConsole() {
 
               <Dialog open={docOpen} onOpenChange={setDocOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/40 text-xs">
+                  <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/30 text-xs">
                     <FileText className="h-4 w-4 text-primary" /> Upload Doc
                   </Button>
                 </DialogTrigger>
@@ -498,13 +498,13 @@ export default function AdminConsole() {
                     <div className="space-y-2"><Label>Description</Label><Textarea value={docDesc} onChange={(e) => setDocDesc(e.target.value)} placeholder="Brief description..." rows={2} /></div>
                     <div className="space-y-2">
                       <Label>File</Label>
-                      <label className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-border bg-secondary/30 cursor-pointer hover:border-primary/40 transition-colors">
+                      <label className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-border bg-muted/50 cursor-pointer hover:border-primary/30 transition-colors">
                         <Upload className="h-5 w-5 text-muted-foreground" />
                         <span className="text-sm text-muted-foreground">{docFile ? docFile.name : "Select file"}</span>
                         <input type="file" className="hidden" onChange={(e) => setDocFile(e.target.files?.[0] ?? null)} />
                       </label>
                     </div>
-                    <Button onClick={uploadDocument} disabled={docSubmitting} className="w-full gradient-accent text-primary-foreground font-semibold">
+                    <Button onClick={uploadDocument} disabled={docSubmitting} className="w-full font-medium">
                       {docSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Upload
                     </Button>
                   </div>
@@ -532,7 +532,7 @@ export default function AdminConsole() {
             {(["pending", "approved", "rejected", "all"] as const).map((f) => (
               <Button key={f} size="sm" variant={leaveFilter === f ? "default" : "outline"}
                 onClick={() => setLeaveFilter(f)}
-                className={`text-xs capitalize ${leaveFilter === f ? "gradient-accent text-primary-foreground" : ""}`}>
+                className={`text-xs capitalize ${leaveFilter === f ? "" : ""}`}>
                 {f} {f !== "all" && `(${allLeaves.filter(l => l.status === f).length})`}
               </Button>
             ))}
@@ -549,7 +549,7 @@ export default function AdminConsole() {
             {(["pending", "approved", "rejected", "paid", "all"] as const).map((f) => (
               <Button key={f} size="sm" variant={reimbFilter === f ? "default" : "outline"}
                 onClick={() => setReimbFilter(f)}
-                className={`text-xs capitalize ${reimbFilter === f ? "gradient-accent text-primary-foreground" : ""}`}>
+                className={`text-xs capitalize ${reimbFilter === f ? "" : ""}`}>
                 {f} {f !== "all" && `(${allReimbs.filter(r => r.status === f).length})`}
               </Button>
             ))}
@@ -565,21 +565,21 @@ export default function AdminConsole() {
           <div className="grid grid-cols-3 gap-2">
             <Dialog open={newsOpen} onOpenChange={setNewsOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/40 text-xs">
+                <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/30 text-xs">
                   <Megaphone className="h-4 w-4 text-primary" /> Post News
                 </Button>
               </DialogTrigger>
             </Dialog>
             <Dialog open={docOpen} onOpenChange={setDocOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/40 text-xs">
+                <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/30 text-xs">
                   <FileText className="h-4 w-4 text-primary" /> Upload Doc
                 </Button>
               </DialogTrigger>
             </Dialog>
             <Dialog open={payOpen} onOpenChange={setPayOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/40 text-xs">
+                <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/30 text-xs">
                   <IndianRupee className="h-4 w-4 text-primary" /> Payslip
                 </Button>
               </DialogTrigger>
@@ -688,7 +688,7 @@ function StatCard({ icon: Icon, label, value, color, onClick }: { icon: any; lab
   return (
     <button
       onClick={onClick}
-      className="rounded-2xl bg-card border border-border p-4 text-left hover:border-primary/30 transition-colors w-full"
+      className="rounded-xl bg-card border border-border p-4 text-left hover:border-primary/30 transition-colors w-full"
     >
       <Icon className={`h-5 w-5 ${color} mb-2`} />
       <p className="text-xs text-muted-foreground">{label}</p>
@@ -804,7 +804,7 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
                 <div className="space-y-1 col-span-2"><Label className="text-xs">Employee Code</Label><Input value={form.employee_code} onChange={(e) => setForm({ ...form, employee_code: e.target.value })} className="h-8 text-xs" /></div>
               </div>
               <div className="flex items-center gap-2">
-                <Button size="sm" onClick={handleSave} disabled={saving} className="text-xs gradient-accent text-primary-foreground">
+                <Button size="sm" onClick={handleSave} disabled={saving} className="text-xs ">
                   {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />} Save
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setEditing(false)} className="text-xs">Cancel</Button>
@@ -850,7 +850,7 @@ function AdminLeaveCard({ leave, empName, onAction }: {
       </div>
       <p className="text-xs text-muted-foreground">{leave.reason}</p>
       {leave.reviewer_notes && (
-        <div className="rounded-lg bg-secondary/50 p-2.5 text-xs text-muted-foreground">
+        <div className="rounded-lg bg-muted p-2.5 text-xs text-muted-foreground">
           <span className="font-medium text-foreground/70">Admin note:</span> {leave.reviewer_notes}
         </div>
       )}
@@ -858,7 +858,7 @@ function AdminLeaveCard({ leave, empName, onAction }: {
         <>
           <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes (optional)" className="text-xs h-8" />
           <div className="grid grid-cols-2 gap-2">
-            <Button size="sm" onClick={() => act("approved")} disabled={acting} className="gradient-accent text-primary-foreground font-semibold text-xs">
+            <Button size="sm" onClick={() => act("approved")} disabled={acting} className="font-medium text-xs">
               <CheckCircle2 className="h-3.5 w-3.5" /> Approve
             </Button>
             <Button size="sm" variant="outline" onClick={() => act("rejected")} disabled={acting} className="border-destructive/40 text-destructive hover:bg-destructive/10 text-xs">
@@ -902,7 +902,7 @@ function AdminReimbCard({ item, empName, onAction }: {
         </div>
       </div>
       {item.reviewer_notes && (
-        <div className="rounded-lg bg-secondary/50 p-2.5 text-xs text-muted-foreground">
+        <div className="rounded-lg bg-muted p-2.5 text-xs text-muted-foreground">
           <span className="font-medium text-foreground/70">Admin note:</span> {item.reviewer_notes}
         </div>
       )}
@@ -911,7 +911,7 @@ function AdminReimbCard({ item, empName, onAction }: {
           <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes (optional)" className="text-xs h-8" />
           <div className={`grid gap-2 ${isPending ? "grid-cols-3" : "grid-cols-2"}`}>
             {isPending && (
-              <Button size="sm" onClick={() => act("approved")} disabled={acting} className="gradient-accent text-primary-foreground font-semibold text-xs">Approve</Button>
+              <Button size="sm" onClick={() => act("approved")} disabled={acting} className="font-medium text-xs">Approve</Button>
             )}
             {(isPending || isApproved) && (
               <Button size="sm" variant="outline" onClick={() => act("paid")} disabled={acting} className="border-primary/40 text-primary text-xs">Mark Paid</Button>
