@@ -710,6 +710,7 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
     designation: emp.designation ?? "", employee_code: emp.employee_code ?? "",
   });
   const [saving, setSaving] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const initials = emp.full_name.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
 
