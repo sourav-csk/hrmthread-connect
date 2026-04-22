@@ -21,6 +21,7 @@ import {
   Mail, Phone, Building2, Briefcase, Hash, Shield, Edit2, Save, Trash2
 } from "lucide-react";
 import { format, parseISO, differenceInCalendarDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import LeaveBalanceHistory from "@/components/LeaveBalanceHistory";
 
 /* ─── Types ─── */
 interface Employee {
@@ -709,6 +710,7 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
     designation: emp.designation ?? "", employee_code: emp.employee_code ?? "",
   });
   const [saving, setSaving] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const initials = emp.full_name.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
 
@@ -756,6 +758,9 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
               <div className="flex items-center gap-2 pt-1 flex-wrap">
                 <Button size="sm" variant="outline" onClick={() => setEditing(true)} className="text-xs gap-1">
                   <Edit2 className="h-3 w-3" /> Edit
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setHistoryOpen(true)} className="text-xs gap-1">
+                  <CalendarDays className="h-3 w-3" /> Leave History
                 </Button>
                 <Select value={role} onValueChange={(v) => onRoleChange(emp.user_id, v as "admin" | "employee")}>
                   <SelectTrigger className="h-8 text-xs w-32">
@@ -808,6 +813,7 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
           )}
         </div>
       )}
+      <LeaveBalanceHistory open={historyOpen} onOpenChange={setHistoryOpen} userId={emp.user_id} employeeName={emp.full_name} currentBalance={emp.leave_balance} />
     </div>
   );
 }
