@@ -47,6 +47,14 @@ interface AttRow {
 interface UserRole {
   id: string; user_id: string; role: "admin" | "employee";
 }
+interface PayslipRow {
+  id: string; user_id: string; month: number; year: number;
+  gross_salary: number | null; net_salary: number | null; file_path: string; created_at: string;
+}
+interface DocRow {
+  id: string; title: string; description: string | null; doc_type: string;
+  file_path: string | null; created_at: string;
+}
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-warning/15 text-warning border-warning/30",
@@ -67,6 +75,8 @@ export default function AdminConsole() {
   const [allReimbs, setAllReimbs] = useState<ReimbReq[]>([]);
   const [todayAttendance, setTodayAttendance] = useState<AttRow[]>([]);
   const [roles, setRoles] = useState<UserRole[]>([]);
+  const [allPayslips, setAllPayslips] = useState<PayslipRow[]>([]);
+  const [allDocs, setAllDocs] = useState<DocRow[]>([]);
   const [searchQ, setSearchQ] = useState("");
 
   // Payslip upload
@@ -100,18 +110,22 @@ export default function AdminConsole() {
     if (!user) return;
     const today = format(new Date(), "yyyy-MM-dd");
     (async () => {
-      const [{ data: e }, { data: l }, { data: r }, { data: a }, { data: ro }] = await Promise.all([
+      const [{ data: e }, { data: l }, { data: r }, { data: a }, { data: ro }, { data: ps }, { data: docs }] = await Promise.all([
         supabase.from("employees").select("*").order("full_name"),
         supabase.from("leaves").select("*").order("created_at", { ascending: false }),
         supabase.from("reimbursements").select("*").order("created_at", { ascending: false }),
         supabase.from("attendance").select("*").eq("date", today).order("check_in_at", { ascending: true }),
         supabase.from("user_roles").select("*"),
+        supabase.from("payslips").select("*").order("created_at", { ascending: false }),
+        supabase.from("documents").select("*").order("created_at", { ascending: false }),
       ]);
       setEmployees((e ?? []) as Employee[]);
       setAllLeaves((l ?? []) as LeaveReq[]);
       setAllReimbs((r ?? []) as ReimbReq[]);
       setTodayAttendance((a ?? []) as AttRow[]);
       setRoles((ro ?? []) as UserRole[]);
+      setAllPayslips((ps ?? []) as PayslipRow[]);
+      setAllDocs((docs ?? []) as DocRow[]);
       setLoading(false);
     })();
   }, [user]);
@@ -138,12 +152,18 @@ export default function AdminConsole() {
 
   /* ─── Actions ─── */
   const handleLeaveAction = async (id: string, action: "approved" | "rejected", notes: string) => {
+    const leave = allLeaves.find((l) => l.id === id);
     const { error } = await supabase.from("leaves").update({
       status: action, reviewed_by: user!.id, reviewed_at: new Date().toISOString(),
       reviewer_notes: notes || null,
     }).eq("id", id);
     if (error) { toast.error(error.message); return; }
     setAllLeaves((prev) => prev.map((l) => l.id === id ? { ...l, status: action, reviewer_notes: notes || null } : l));
+    // Reflect balance change in local state (trigger handles DB)
+    if (leave && leave.leave_type !== "unpaid" && action === "approved" && leave.status === "pending") {
+      const days = differenceInCalendarDays(parseISO(leave.end_date), parseISO(leave.start_date)) + 1;
+      setEmployees((prev) => prev.map((e) => e.user_id === leave.user_id ? { ...e, leave_balance: Math.max(e.leave_balance - days, 0) } : e));
+    }
     toast.success(`Leave ${action}`);
   };
 
@@ -199,13 +219,14 @@ export default function AdminConsole() {
       const path = `${payUserId}/${payYear}-${payMonth.padStart(2, "0")}.pdf`;
       const { error: upErr } = await supabase.storage.from("payslips").upload(path, payFile, { upsert: true, contentType: "application/pdf" });
       if (upErr) throw upErr;
-      const { error } = await supabase.from("payslips").insert({
+      const { data: inserted, error } = await supabase.from("payslips").insert({
         user_id: payUserId, month: parseInt(payMonth), year: parseInt(payYear),
         gross_salary: payGross ? parseFloat(payGross) : null,
         net_salary: payNet ? parseFloat(payNet) : null,
         file_path: path, uploaded_by: user!.id,
-      });
+      }).select().single();
       if (error) throw error;
+      setAllPayslips((prev) => [inserted as PayslipRow, ...prev]);
       toast.success("Payslip uploaded");
       setPayOpen(false); setPayFile(null); setPayGross(""); setPayNet("");
     } catch (e: any) { toast.error(e.message ?? "Upload failed"); }
@@ -215,12 +236,12 @@ export default function AdminConsole() {
   const postNews = async () => {
     if (!newsTitle.trim()) { toast.error("Title is required"); return; }
     setNewsSubmitting(true);
-    const { error } = await supabase.from("documents").insert({
+    const { data: inserted, error } = await supabase.from("documents").insert({
       title: newsTitle.trim(), description: newsDesc.trim() || null,
       doc_type: "news" as const, uploaded_by: user!.id,
-    });
+    }).select().single();
     if (error) toast.error(error.message);
-    else { toast.success("News posted"); setNewsOpen(false); setNewsTitle(""); setNewsDesc(""); }
+    else { setAllDocs((prev) => [inserted as DocRow, ...prev]); toast.success("News posted"); setNewsOpen(false); setNewsTitle(""); setNewsDesc(""); }
     setNewsSubmitting(false);
   };
 
@@ -231,15 +252,32 @@ export default function AdminConsole() {
       const path = `company/${Date.now()}-${docFile.name}`;
       const { error: upErr } = await supabase.storage.from("documents").upload(path, docFile, { upsert: true });
       if (upErr) throw upErr;
-      const { error } = await supabase.from("documents").insert({
+      const { data: inserted, error } = await supabase.from("documents").insert({
         title: docTitle.trim(), description: docDesc.trim() || null,
         doc_type: "document" as const, file_path: path, uploaded_by: user!.id,
-      });
+      }).select().single();
       if (error) throw error;
+      setAllDocs((prev) => [inserted as DocRow, ...prev]);
       toast.success("Document uploaded");
       setDocOpen(false); setDocTitle(""); setDocDesc(""); setDocFile(null);
     } catch (e: any) { toast.error(e.message ?? "Upload failed"); }
     setDocSubmitting(false);
+  };
+
+  const deletePayslip = async (ps: PayslipRow) => {
+    await supabase.storage.from("payslips").remove([ps.file_path]);
+    const { error } = await supabase.from("payslips").delete().eq("id", ps.id);
+    if (error) { toast.error(error.message); return; }
+    setAllPayslips((prev) => prev.filter((p) => p.id !== ps.id));
+    toast.success("Payslip deleted");
+  };
+
+  const deleteDocument = async (doc: DocRow) => {
+    if (doc.file_path) await supabase.storage.from("documents").remove([doc.file_path]);
+    const { error } = await supabase.from("documents").delete().eq("id", doc.id);
+    if (error) { toast.error(error.message); return; }
+    setAllDocs((prev) => prev.filter((d) => d.id !== doc.id));
+    toast.success(`${doc.doc_type === "news" ? "News" : "Document"} deleted`);
   };
 
   if (loading) return (
@@ -523,32 +561,118 @@ export default function AdminConsole() {
 
         {/* ══════════ CONTENT TAB ══════════ */}
         <TabsContent value="content" className="space-y-4 mt-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             <Dialog open={newsOpen} onOpenChange={setNewsOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="h-auto py-4 flex-col gap-2 border-border hover:border-primary/40">
-                  <Megaphone className="h-5 w-5 text-primary" />
-                  <span className="text-xs font-medium">Post News</span>
+                <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/40 text-xs">
+                  <Megaphone className="h-4 w-4 text-primary" /> Post News
                 </Button>
               </DialogTrigger>
             </Dialog>
             <Dialog open={docOpen} onOpenChange={setDocOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="h-auto py-4 flex-col gap-2 border-border hover:border-primary/40">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <span className="text-xs font-medium">Upload Document</span>
+                <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/40 text-xs">
+                  <FileText className="h-4 w-4 text-primary" /> Upload Doc
+                </Button>
+              </DialogTrigger>
+            </Dialog>
+            <Dialog open={payOpen} onOpenChange={setPayOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-border hover:border-primary/40 text-xs">
+                  <IndianRupee className="h-4 w-4 text-primary" /> Payslip
                 </Button>
               </DialogTrigger>
             </Dialog>
           </div>
-          <Dialog open={payOpen} onOpenChange={setPayOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2 border-border hover:border-primary/40">
-                <IndianRupee className="h-5 w-5 text-primary" />
-                <span className="text-xs font-medium">Upload Payslip</span>
-              </Button>
-            </DialogTrigger>
-          </Dialog>
+
+          {/* Payslips list */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2"><IndianRupee className="h-4 w-4 text-primary" /> Payslips ({allPayslips.length})</h3>
+            {allPayslips.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No payslips uploaded yet</p>}
+            {allPayslips.map((ps) => (
+              <div key={ps.id} className="rounded-xl bg-card border border-border p-3 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">{empName(ps.user_id)}</p>
+                  <p className="text-xs text-muted-foreground">{MONTHS[ps.month - 1]} {ps.year}{ps.net_salary ? ` · ₹${ps.net_salary.toLocaleString("en-IN")}` : ""}</p>
+                </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-card border-border">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete payslip?</AlertDialogTitle>
+                      <AlertDialogDescription>Remove payslip for {empName(ps.user_id)} ({MONTHS[ps.month - 1]} {ps.year})?</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deletePayslip(ps)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            ))}
+          </div>
+
+          {/* News list */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2"><Megaphone className="h-4 w-4 text-primary" /> News ({allDocs.filter(d => d.doc_type === "news").length})</h3>
+            {allDocs.filter(d => d.doc_type === "news").length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No news posted yet</p>}
+            {allDocs.filter(d => d.doc_type === "news").map((doc) => (
+              <div key={doc.id} className="rounded-xl bg-card border border-border p-3 flex items-center justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{doc.title}</p>
+                  {doc.description && <p className="text-xs text-muted-foreground truncate">{doc.description}</p>}
+                  <p className="text-[10px] text-muted-foreground">{format(parseISO(doc.created_at), "d MMM yyyy")}</p>
+                </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive/10 flex-shrink-0"><Trash2 className="h-3.5 w-3.5" /></Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-card border-border">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete news?</AlertDialogTitle>
+                      <AlertDialogDescription>Permanently remove "{doc.title}"?</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deleteDocument(doc)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            ))}
+          </div>
+
+          {/* Documents list */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> Documents ({allDocs.filter(d => d.doc_type === "document").length})</h3>
+            {allDocs.filter(d => d.doc_type === "document").length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No documents uploaded yet</p>}
+            {allDocs.filter(d => d.doc_type === "document").map((doc) => (
+              <div key={doc.id} className="rounded-xl bg-card border border-border p-3 flex items-center justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{doc.title}</p>
+                  {doc.description && <p className="text-xs text-muted-foreground truncate">{doc.description}</p>}
+                  <p className="text-[10px] text-muted-foreground">{format(parseISO(doc.created_at), "d MMM yyyy")}</p>
+                </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive/10 flex-shrink-0"><Trash2 className="h-3.5 w-3.5" /></Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-card border-border">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete document?</AlertDialogTitle>
+                      <AlertDialogDescription>Permanently remove "{doc.title}"?</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deleteDocument(doc)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            ))}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

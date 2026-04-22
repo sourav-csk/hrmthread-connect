@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import logoImg from "@/assets/logo.png";
 
 export default function Auth() {
   const { user, signIn, signUp } = useAuth();
@@ -37,11 +38,9 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center px-5 bg-background">
       <div className="w-full max-w-md">
         <div className="flex items-center gap-3 mb-10">
-          <div className="h-12 w-12 rounded-2xl gradient-accent flex items-center justify-center text-primary-foreground font-bold text-lg shadow-glow">
-            HT
-          </div>
+          <img src={logoImg} alt="HRMSpine" className="h-12 w-12 rounded-2xl shadow-glow object-contain" />
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">HRMThread</h1>
+            <h1 className="text-2xl font-bold tracking-tight">HRMSpine</h1>
             <p className="text-sm text-muted-foreground">Your workplace, simplified</p>
           </div>
         </div>
@@ -51,7 +50,7 @@ export default function Auth() {
             {mode === "signin" ? "Sign in" : "Create account"}
           </h2>
           <p className="text-sm text-muted-foreground mb-6">
-            {mode === "signin" ? "Welcome back to HRMThread" : "Start managing your workday"}
+            {mode === "signin" ? "Welcome back to HRMSpine" : "Start managing your workday"}
           </p>
 
           <form onSubmit={submit} className="space-y-4">
