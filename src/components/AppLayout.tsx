@@ -19,10 +19,10 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-[480px] min-h-screen flex flex-col pb-20">
+      <div className="mx-auto max-w-[480px] min-h-screen flex flex-col pb-16">
         <Outlet />
       </div>
-      <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-card/95 backdrop-blur-lg">
+      <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-card">
         <div className="mx-auto max-w-[480px] grid" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
           {tabs.map((t) => (
             <NavLink
@@ -31,12 +31,12 @@ export default function AppLayout() {
               end={t.end}
               className={({ isActive }) =>
                 cn(
-                  "flex flex-col items-center justify-center gap-1 py-3 text-xs font-medium transition-colors",
+                  "flex flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors",
                   isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 )
               }
             >
-              <t.icon className="h-5 w-5" strokeWidth={2.2} />
+              <t.icon className="h-5 w-5" strokeWidth={1.8} />
               <span>{t.label}</span>
             </NavLink>
           ))}

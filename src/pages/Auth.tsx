@@ -36,40 +36,37 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-5 bg-background">
-      <div className="w-full max-w-md">
-        <div className="flex items-center gap-3 mb-10">
-          <img src={logoImg} alt="HRMSpine" className="h-12 w-12 rounded-2xl shadow-glow object-contain" />
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">HRMSpine</h1>
-            <p className="text-sm text-muted-foreground">Your workplace, simplified</p>
-          </div>
+      <div className="w-full max-w-sm">
+        <div className="flex items-center gap-3 mb-8 justify-center">
+          <img src={logoImg} alt="HRMSpine" className="h-10 w-10 rounded-lg object-contain" />
+          <h1 className="text-xl font-bold tracking-tight">HRMSpine</h1>
         </div>
 
-        <div className="rounded-2xl gradient-card border border-border p-6 shadow-elevated">
-          <h2 className="text-xl font-semibold mb-1">
+        <div className="rounded-xl bg-card border border-border p-6 shadow-elevated">
+          <h2 className="text-lg font-semibold mb-1">
             {mode === "signin" ? "Sign in" : "Create account"}
           </h2>
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-sm text-muted-foreground mb-5">
             {mode === "signin" ? "Welcome back to HRMSpine" : "Start managing your workday"}
           </p>
 
           <form onSubmit={submit} className="space-y-4">
             {mode === "signup" && (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="name">Full name</Label>
                 <Input id="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Anya Sharma" />
               </div>
             )}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" />
             </div>
 
-            <Button type="submit" disabled={busy} className="w-full gradient-accent text-primary-foreground font-semibold hover:opacity-90 shadow-glow">
+            <Button type="submit" disabled={busy} className="w-full font-medium">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {mode === "signin" ? "Sign in" : "Create account"}
             </Button>
@@ -84,7 +81,7 @@ export default function Auth() {
           </button>
         </div>
 
-        <p className="text-xs text-muted-foreground text-center mt-6">
+        <p className="text-xs text-muted-foreground text-center mt-5">
           By continuing you agree to our terms & privacy policy.
         </p>
       </div>
