@@ -252,11 +252,12 @@ export default function AdminConsole() {
       const path = `company/${Date.now()}-${docFile.name}`;
       const { error: upErr } = await supabase.storage.from("documents").upload(path, docFile, { upsert: true });
       if (upErr) throw upErr;
-      const { error } = await supabase.from("documents").insert({
+      const { data: inserted, error } = await supabase.from("documents").insert({
         title: docTitle.trim(), description: docDesc.trim() || null,
         doc_type: "document" as const, file_path: path, uploaded_by: user!.id,
-      });
+      }).select().single();
       if (error) throw error;
+      setAllDocs((prev) => [inserted as DocRow, ...prev]);
       toast.success("Document uploaded");
       setDocOpen(false); setDocTitle(""); setDocDesc(""); setDocFile(null);
     } catch (e: any) { toast.error(e.message ?? "Upload failed"); }
