@@ -100,9 +100,9 @@ export default function Attendance() {
   const avgHours = presentDays > 0 ? totalHours / presentDays / 60 : 0;
 
   return (
-    <div className="px-5 pt-6 space-y-4 pb-4">
+    <div className="px-4 xs:px-5 pt-5 xs:pt-6 space-y-4 pb-4">
       <header>
-        <h1 className="text-lg font-bold tracking-tight">Attendance</h1>
+        <h1 className="text-lg xs:text-xl font-bold tracking-tight">Attendance</h1>
         <p className="text-xs text-muted-foreground mt-0.5">{format(new Date(), "EEEE, d MMMM yyyy")}</p>
       </header>
 

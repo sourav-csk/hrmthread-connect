@@ -82,10 +82,10 @@ export default function Reimbursements() {
   if (loading) return <div className="p-8 text-center text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin inline" /></div>;
 
   return (
-    <div className="px-5 pt-6 space-y-4 pb-4">
+    <div className="px-4 xs:px-5 pt-5 xs:pt-6 space-y-4 pb-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold tracking-tight">Reimbursements</h1>
+          <h1 className="text-lg xs:text-xl font-bold tracking-tight">Reimbursements</h1>
           <p className="text-xs text-muted-foreground mt-0.5">Submit & track expense claims</p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>

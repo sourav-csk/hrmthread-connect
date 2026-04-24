@@ -48,7 +48,7 @@ export default function Dashboard() {
   const status = todayAttendance?.check_out_at ? "Checked out" : todayAttendance?.check_in_at ? "Checked in" : "Not checked in";
 
   return (
-    <div className="px-5 pt-6 space-y-5">
+    <div className="px-4 xs:px-5 pt-5 xs:pt-6 space-y-4 xs:space-y-5">
       {/* Header */}
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
