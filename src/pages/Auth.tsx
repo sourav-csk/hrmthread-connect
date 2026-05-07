@@ -57,10 +57,14 @@ export default function Auth() {
 
         <div className="rounded-xl bg-card border border-border p-6 shadow-elevated">
           <h2 className="text-lg font-semibold mb-1">
-            {mode === "signin" ? "Sign in" : "Create account"}
+            {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Reset password"}
           </h2>
           <p className="text-sm text-muted-foreground mb-5">
-            {mode === "signin" ? "Welcome back to HRMSpine" : "Start managing your workday"}
+            {mode === "signin"
+              ? "Welcome back to HRMSpine"
+              : mode === "signup"
+              ? "Start managing your workday"
+              : "We'll email you a secure reset link"}
           </p>
 
           <form onSubmit={submit} className="space-y-4">
@@ -74,14 +78,23 @@ export default function Auth() {
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" />
-            </div>
+            {mode !== "forgot" && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  {mode === "signin" && (
+                    <button type="button" onClick={() => setMode("forgot")} className="text-xs text-primary hover:underline">
+                      Forgot?
+                    </button>
+                  )}
+                </div>
+                <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" />
+              </div>
+            )}
 
             <Button type="submit" disabled={busy} className="w-full font-medium">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
+              {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
             </Button>
           </form>
 
@@ -90,7 +103,11 @@ export default function Auth() {
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
             className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
+            {mode === "signin"
+              ? "New here? Create an account"
+              : mode === "signup"
+              ? "Already have an account? Sign in"
+              : "Back to sign in"}
           </button>
         </div>
 
