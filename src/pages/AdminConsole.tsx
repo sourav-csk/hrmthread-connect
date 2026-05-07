@@ -18,7 +18,7 @@ import {
   Loader2, Users, CalendarDays, CheckCircle2, XCircle, Clock,
   Upload, FileText, Megaphone, IndianRupee, Search, LayoutDashboard,
   Receipt, TrendingUp, UserCog, Eye, ChevronDown, ChevronRight,
-  Mail, Phone, Building2, Briefcase, Hash, Shield, Edit2, Save, Trash2
+  Mail, Phone, Building2, Briefcase, Hash, Shield, Edit2, Save, Trash2, KeyRound
 } from "lucide-react";
 import { format, parseISO, differenceInCalendarDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import LeaveBalanceHistory from "@/components/LeaveBalanceHistory";
@@ -771,6 +771,7 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
                     <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
+                <ResetPasswordButton emp={emp} />
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button size="sm" variant="outline" className="text-xs gap-1 border-destructive/40 text-destructive hover:bg-destructive/10">
@@ -923,5 +924,55 @@ function AdminReimbCard({ item, empName, onAction }: {
         </>
       )}
     </div>
+  );
+}
+
+function ResetPasswordButton({ emp }: { emp: Employee }) {
+  const [open, setOpen] = useState(false);
+  const [pw, setPw] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (pw.length < 8) { toast.error("Password must be at least 8 characters"); return; }
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke("admin-reset-password", {
+      body: { target_user_id: emp.user_id, new_password: pw },
+    });
+    setBusy(false);
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error ?? error?.message ?? "Failed to reset password");
+      return;
+    }
+    toast.success(`Password reset for ${emp.full_name}`);
+    setPw("");
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="text-xs gap-1">
+          <KeyRound className="h-3 w-3" /> Reset password
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="bg-card border-border">
+        <DialogHeader>
+          <DialogTitle>Reset password</DialogTitle>
+          <DialogDescription>
+            Set a new password for {emp.full_name}. They'll use it to sign in immediately.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-2">
+          <Label className="text-xs">New password</Label>
+          <Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="At least 8 characters" minLength={8} />
+        </div>
+        <div className="flex justify-end gap-2 mt-2">
+          <Button variant="outline" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button size="sm" onClick={submit} disabled={busy}>
+            {busy && <Loader2 className="h-3 w-3 animate-spin mr-1" />} Update
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
