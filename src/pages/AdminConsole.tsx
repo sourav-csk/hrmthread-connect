@@ -771,6 +771,7 @@ function EmployeeCard({ emp, role, onRoleChange, onUpdate, onDelete }: {
                     <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
+                <ResetPasswordButton emp={emp} />
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button size="sm" variant="outline" className="text-xs gap-1 border-destructive/40 text-destructive hover:bg-destructive/10">
