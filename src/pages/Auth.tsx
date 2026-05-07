@@ -23,6 +23,18 @@ export default function Auth() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
+    if (mode === "forgot") {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      setBusy(false);
+      if (error) toast.error(error.message);
+      else {
+        toast.success("Reset link sent. Check your email.");
+        setMode("signin");
+      }
+      return;
+    }
     const res = mode === "signin"
       ? await signIn(email.trim(), password)
       : await signUp(email.trim(), password, fullName.trim());
