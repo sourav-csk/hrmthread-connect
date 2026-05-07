@@ -18,7 +18,7 @@ import {
   Loader2, Users, CalendarDays, CheckCircle2, XCircle, Clock,
   Upload, FileText, Megaphone, IndianRupee, Search, LayoutDashboard,
   Receipt, TrendingUp, UserCog, Eye, ChevronDown, ChevronRight,
-  Mail, Phone, Building2, Briefcase, Hash, Shield, Edit2, Save, Trash2
+  Mail, Phone, Building2, Briefcase, Hash, Shield, Edit2, Save, Trash2, KeyRound
 } from "lucide-react";
 import { format, parseISO, differenceInCalendarDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import LeaveBalanceHistory from "@/components/LeaveBalanceHistory";
