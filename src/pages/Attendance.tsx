@@ -69,17 +69,28 @@ export default function Attendance() {
       const { error: upErr } = await supabase.storage.from("selfies").upload(path, blob, { contentType: "image/jpeg", upsert: true });
       if (upErr) throw upErr;
       const nowIso = new Date().toISOString();
+      const newPunch: Punch = { type: mode, at: nowIso, selfie: path, score };
+      const existing: Punch[] = Array.isArray(att?.punches) ? (att!.punches as Punch[]) : [];
+      const allPunches = [...existing, newPunch];
+      const ins = allPunches.filter((p) => p.type === "in").map((p) => p.at).sort();
+      const outs = allPunches.filter((p) => p.type === "out").map((p) => p.at).sort();
+      const minIn = ins[0] ?? null;
+      const maxOut = outs[outs.length - 1] ?? null;
+
       if (mode === "in") {
         const { data, error } = await supabase.from("attendance").upsert({
-          user_id: user.id, date: today, check_in_at: nowIso, check_in_selfie_url: path, face_match_score: score, status: "present",
+          user_id: user.id, date: today, check_in_at: minIn, check_in_selfie_url: path,
+          face_match_score: score, status: "present", punches: allPunches as any,
         }, { onConflict: "user_id,date" }).select().single();
         if (error) throw error;
-        setAtt(data as AttRow); toast.success("Checked in successfully");
+        setAtt(data as any as AttRow); toast.success(`Checked in (${ins.length})`);
       } else {
         if (!att) throw new Error("No check-in found for today");
-        const { data, error } = await supabase.from("attendance").update({ check_out_at: nowIso, check_out_selfie_url: path }).eq("id", att.id).select().single();
+        const { data, error } = await supabase.from("attendance").update({
+          check_out_at: maxOut, check_out_selfie_url: path, punches: allPunches as any,
+        }).eq("id", att.id).select().single();
         if (error) throw error;
-        setAtt(data as AttRow); toast.success("Checked out successfully");
+        setAtt(data as any as AttRow); toast.success(`Checked out (${outs.length})`);
       }
       setMode(null);
     } catch (e: any) { toast.error(e.message ?? "Failed to mark attendance"); }
