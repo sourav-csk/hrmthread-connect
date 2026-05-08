@@ -9,9 +9,10 @@ import SelfieCapture from "@/components/SelfieCapture";
 import { euclideanDistance, MATCH_DISTANCE_THRESHOLD } from "@/lib/faceApi";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+interface Punch { type: "in" | "out"; at: string; selfie?: string; score?: number | null }
 interface AttRow {
   id: string; date: string; check_in_at: string | null; check_out_at: string | null;
-  face_match_score: number | null; status: string;
+  face_match_score: number | null; status: string; punches?: Punch[] | null;
 }
 
 export default function Attendance() {
@@ -68,17 +69,28 @@ export default function Attendance() {
       const { error: upErr } = await supabase.storage.from("selfies").upload(path, blob, { contentType: "image/jpeg", upsert: true });
       if (upErr) throw upErr;
       const nowIso = new Date().toISOString();
+      const newPunch: Punch = { type: mode, at: nowIso, selfie: path, score };
+      const existing: Punch[] = Array.isArray(att?.punches) ? (att!.punches as Punch[]) : [];
+      const allPunches = [...existing, newPunch];
+      const ins = allPunches.filter((p) => p.type === "in").map((p) => p.at).sort();
+      const outs = allPunches.filter((p) => p.type === "out").map((p) => p.at).sort();
+      const minIn = ins[0] ?? null;
+      const maxOut = outs[outs.length - 1] ?? null;
+
       if (mode === "in") {
         const { data, error } = await supabase.from("attendance").upsert({
-          user_id: user.id, date: today, check_in_at: nowIso, check_in_selfie_url: path, face_match_score: score, status: "present",
+          user_id: user.id, date: today, check_in_at: minIn, check_in_selfie_url: path,
+          face_match_score: score, status: "present", punches: allPunches as any,
         }, { onConflict: "user_id,date" }).select().single();
         if (error) throw error;
-        setAtt(data as AttRow); toast.success("Checked in successfully");
+        setAtt(data as any as AttRow); toast.success(`Checked in (${ins.length})`);
       } else {
         if (!att) throw new Error("No check-in found for today");
-        const { data, error } = await supabase.from("attendance").update({ check_out_at: nowIso, check_out_selfie_url: path }).eq("id", att.id).select().single();
+        const { data, error } = await supabase.from("attendance").update({
+          check_out_at: maxOut, check_out_selfie_url: path, punches: allPunches as any,
+        }).eq("id", att.id).select().single();
         if (error) throw error;
-        setAtt(data as AttRow); toast.success("Checked out successfully");
+        setAtt(data as any as AttRow); toast.success(`Checked out (${outs.length})`);
       }
       setMode(null);
     } catch (e: any) { toast.error(e.message ?? "Failed to mark attendance"); }
@@ -87,6 +99,12 @@ export default function Attendance() {
 
   if (loading) return <div className="p-8 text-center text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin inline" /></div>;
 
+  const punches: Punch[] = Array.isArray(att?.punches) ? (att!.punches as Punch[]) : [];
+  const inCount = punches.filter((p) => p.type === "in").length;
+  const outCount = punches.filter((p) => p.type === "out").length;
+  const sessionOpen = inCount > outCount; // currently checked in
+  const canCheckIn = !sessionOpen;
+  const canCheckOut = sessionOpen;
   const checkedIn = !!att?.check_in_at;
   const checkedOut = !!att?.check_out_at;
   const daysInMonth = eachDayOfInterval({ start: startOfMonth(histMonth), end: endOfMonth(histMonth) });
@@ -162,13 +180,30 @@ export default function Attendance() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              <Button onClick={() => setMode("in")} disabled={checkedIn} className="h-12 font-medium">
-                <LogIn className="h-4 w-4" /> Check in
-              </Button>
-              <Button onClick={() => setMode("out")} disabled={!checkedIn || checkedOut} variant="outline" className="h-12 font-medium">
-                <LogOut className="h-4 w-4" /> Check out
-              </Button>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Button onClick={() => setMode("in")} disabled={!canCheckIn} className="h-12 font-medium">
+                  <LogIn className="h-4 w-4" /> Check in
+                </Button>
+                <Button onClick={() => setMode("out")} disabled={!canCheckOut} variant="outline" className="h-12 font-medium">
+                  <LogOut className="h-4 w-4" /> Check out
+                </Button>
+              </div>
+              {punches.length > 0 && (
+                <div className="rounded-lg bg-muted/30 border border-border p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Today's punches ({punches.length})</p>
+                  <div className="space-y-1">
+                    {punches.map((p, i) => (
+                      <div key={i} className="flex items-center justify-between text-xs">
+                        <span className={`font-medium ${p.type === "in" ? "text-success" : "text-warning"}`}>
+                          {p.type === "in" ? "↓ IN" : "↑ OUT"}
+                        </span>
+                        <span className="tabular text-muted-foreground">{format(parseISO(p.at), "HH:mm:ss")}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </TabsContent>

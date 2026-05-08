@@ -1,0 +1,1 @@
+ALTER TABLE public.attendance ADD COLUMN IF NOT EXISTS punches jsonb NOT NULL DEFAULT '[]'::jsonb;

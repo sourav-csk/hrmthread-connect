@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Download, Receipt, IndianRupee, FileText } from "lucide-react";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
 
 interface Payslip {
   id: string; month: number; year: number; gross_salary: number | null;
@@ -16,15 +17,22 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 export default function Payslips() {
   const { user } = useAuth();
   const [payslips, setPayslips] = useState<Payslip[]>([]);
+  const [employee, setEmployee] = useState<{ full_name: string; email: string; employee_code: string | null; designation: string | null; department: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [filterYear, setFilterYear] = useState<string>(String(new Date().getFullYear()));
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("payslips").select("*").eq("user_id", user.id)
-      .order("year", { ascending: false }).order("month", { ascending: false })
-      .then(({ data }) => { setPayslips((data ?? []) as Payslip[]); setLoading(false); });
+    Promise.all([
+      supabase.from("payslips").select("*").eq("user_id", user.id)
+        .order("year", { ascending: false }).order("month", { ascending: false }),
+      supabase.from("employees").select("full_name,email,employee_code,designation,department").eq("user_id", user.id).maybeSingle(),
+    ]).then(([{ data: ps }, { data: emp }]) => {
+      setPayslips((ps ?? []) as Payslip[]);
+      setEmployee(emp as any);
+      setLoading(false);
+    });
   }, [user]);
 
   const years = [...new Set(payslips.map((p) => p.year))].sort((a, b) => b - a);
@@ -32,16 +40,88 @@ export default function Payslips() {
   const totalNet = filtered.reduce((s, p) => s + (p.net_salary ?? 0), 0);
   const totalGross = filtered.reduce((s, p) => s + (p.gross_salary ?? 0), 0);
 
+  const generatePdf = (payslip: Payslip) => {
+    const doc = new jsPDF();
+    const monthLabel = `${MONTHS[payslip.month - 1]} ${payslip.year}`;
+    const gross = Number(payslip.gross_salary ?? 0);
+    const net = Number(payslip.net_salary ?? 0);
+    const deductions = Math.max(0, gross - net);
+
+    // Header
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, 210, 32, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20); doc.setFont("helvetica", "bold");
+    doc.text("HRMSpine", 14, 15);
+    doc.setFontSize(10); doc.setFont("helvetica", "normal");
+    doc.text("Payslip", 14, 23);
+    doc.setFontSize(11); doc.setFont("helvetica", "bold");
+    doc.text(monthLabel, 196, 20, { align: "right" });
+
+    // Employee block
+    doc.setTextColor(30, 30, 30);
+    doc.setFontSize(11); doc.setFont("helvetica", "bold");
+    doc.text("Employee Details", 14, 46);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+    let y = 54;
+    const rows: [string, string][] = [
+      ["Name", employee?.full_name ?? "-"],
+      ["Email", employee?.email ?? "-"],
+      ["Employee Code", employee?.employee_code ?? "-"],
+      ["Designation", employee?.designation ?? "-"],
+      ["Department", employee?.department ?? "-"],
+      ["Pay Period", monthLabel],
+    ];
+    rows.forEach(([k, v]) => { doc.setTextColor(120,120,120); doc.text(k, 14, y); doc.setTextColor(30,30,30); doc.text(String(v), 70, y); y += 7; });
+
+    // Earnings/deductions
+    y += 6;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(11);
+    doc.text("Earnings & Deductions", 14, y); y += 4;
+    doc.setDrawColor(220,220,220); doc.line(14, y, 196, y); y += 8;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+    const fmt = (n: number) => `INR ${n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const lines: [string, number][] = [
+      ["Gross Salary", gross],
+      ["Deductions", -deductions],
+    ];
+    lines.forEach(([k, v]) => {
+      doc.setTextColor(60,60,60); doc.text(k, 14, y);
+      doc.setTextColor(v < 0 ? 200 : 30, 30, 30); doc.text(fmt(Math.abs(v)), 196, y, { align: "right" });
+      y += 7;
+    });
+    y += 2; doc.line(14, y, 196, y); y += 8;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(12);
+    doc.text("Net Pay", 14, y);
+    doc.text(fmt(net), 196, y, { align: "right" });
+
+    // Footer
+    doc.setFont("helvetica", "italic"); doc.setFontSize(8); doc.setTextColor(140,140,140);
+    doc.text("This is a system-generated payslip and does not require a signature.", 14, 285);
+    doc.text(`Generated on ${new Date().toLocaleDateString("en-IN")}`, 196, 285, { align: "right" });
+
+    doc.save(`payslip-${MONTHS[payslip.month - 1]}-${payslip.year}.pdf`);
+  };
+
   const handleDownload = async (payslip: Payslip) => {
     setDownloading(payslip.id);
     try {
-      const { data, error } = await supabase.storage.from("payslips").download(payslip.file_path);
-      if (error) throw error;
-      const url = URL.createObjectURL(data);
-      const a = document.createElement("a"); a.href = url;
-      a.download = `payslip-${MONTHS[payslip.month - 1]}-${payslip.year}.pdf`;
-      a.click(); URL.revokeObjectURL(url);
-    } catch (e: any) { toast.error(e.message ?? "Download failed"); }
+      if (payslip.file_path) {
+        const { data, error } = await supabase.storage.from("payslips").download(payslip.file_path);
+        if (!error && data) {
+          const url = URL.createObjectURL(data);
+          const a = document.createElement("a"); a.href = url;
+          a.download = `payslip-${MONTHS[payslip.month - 1]}-${payslip.year}.pdf`;
+          a.click(); URL.revokeObjectURL(url);
+          setDownloading(null);
+          return;
+        }
+      }
+      // Fallback: generate from data
+      generatePdf(payslip);
+    } catch (e: any) {
+      try { generatePdf(payslip); } catch { toast.error(e.message ?? "Download failed"); }
+    }
     setDownloading(null);
   };
 
