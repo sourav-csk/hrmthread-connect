@@ -44,7 +44,12 @@ Deno.serve(async (req) => {
     }
 
     const { error: updErr } = await admin.auth.admin.updateUserById(targetId, { password: newPassword });
-    if (updErr) throw updErr;
+    if (updErr) {
+      return new Response(JSON.stringify({ error: updErr.message }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
