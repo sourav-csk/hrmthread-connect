@@ -99,6 +99,12 @@ export default function Attendance() {
 
   if (loading) return <div className="p-8 text-center text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin inline" /></div>;
 
+  const punches: Punch[] = Array.isArray(att?.punches) ? (att!.punches as Punch[]) : [];
+  const inCount = punches.filter((p) => p.type === "in").length;
+  const outCount = punches.filter((p) => p.type === "out").length;
+  const sessionOpen = inCount > outCount; // currently checked in
+  const canCheckIn = !sessionOpen;
+  const canCheckOut = sessionOpen;
   const checkedIn = !!att?.check_in_at;
   const checkedOut = !!att?.check_out_at;
   const daysInMonth = eachDayOfInterval({ start: startOfMonth(histMonth), end: endOfMonth(histMonth) });
