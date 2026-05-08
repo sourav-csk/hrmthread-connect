@@ -180,13 +180,30 @@ export default function Attendance() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              <Button onClick={() => setMode("in")} disabled={checkedIn} className="h-12 font-medium">
-                <LogIn className="h-4 w-4" /> Check in
-              </Button>
-              <Button onClick={() => setMode("out")} disabled={!checkedIn || checkedOut} variant="outline" className="h-12 font-medium">
-                <LogOut className="h-4 w-4" /> Check out
-              </Button>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Button onClick={() => setMode("in")} disabled={!canCheckIn} className="h-12 font-medium">
+                  <LogIn className="h-4 w-4" /> Check in
+                </Button>
+                <Button onClick={() => setMode("out")} disabled={!canCheckOut} variant="outline" className="h-12 font-medium">
+                  <LogOut className="h-4 w-4" /> Check out
+                </Button>
+              </div>
+              {punches.length > 0 && (
+                <div className="rounded-lg bg-muted/30 border border-border p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Today's punches ({punches.length})</p>
+                  <div className="space-y-1">
+                    {punches.map((p, i) => (
+                      <div key={i} className="flex items-center justify-between text-xs">
+                        <span className={`font-medium ${p.type === "in" ? "text-success" : "text-warning"}`}>
+                          {p.type === "in" ? "↓ IN" : "↑ OUT"}
+                        </span>
+                        <span className="tabular text-muted-foreground">{format(parseISO(p.at), "HH:mm:ss")}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </TabsContent>
