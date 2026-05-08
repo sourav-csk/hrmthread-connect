@@ -9,9 +9,10 @@ import SelfieCapture from "@/components/SelfieCapture";
 import { euclideanDistance, MATCH_DISTANCE_THRESHOLD } from "@/lib/faceApi";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+interface Punch { type: "in" | "out"; at: string; selfie?: string; score?: number | null }
 interface AttRow {
   id: string; date: string; check_in_at: string | null; check_out_at: string | null;
-  face_match_score: number | null; status: string;
+  face_match_score: number | null; status: string; punches?: Punch[] | null;
 }
 
 export default function Attendance() {
