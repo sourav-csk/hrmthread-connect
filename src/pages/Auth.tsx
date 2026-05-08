@@ -15,6 +15,7 @@ export default function Auth() {
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -24,13 +25,21 @@ export default function Auth() {
     e.preventDefault();
     setBusy(true);
     if (mode === "forgot") {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/reset-password`,
+      if (password !== confirmPassword) {
+        setBusy(false);
+        toast.error("Passwords do not match");
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke("reset-password-direct", {
+        body: { email: email.trim(), newPassword: password },
       });
       setBusy(false);
-      if (error) toast.error(error.message);
-      else {
-        toast.success("Reset link sent. Check your email.");
+      if (error || (data as any)?.error) {
+        toast.error((data as any)?.error || error?.message || "Reset failed");
+      } else {
+        toast.success("Password updated. Please sign in.");
+        setPassword("");
+        setConfirmPassword("");
         setMode("signin");
       }
       return;
@@ -64,7 +73,7 @@ export default function Auth() {
               ? "Welcome back to HRMSpine"
               : mode === "signup"
               ? "Start managing your workday"
-              : "We'll email you a secure reset link"}
+              : "Enter your email and a new password"}
           </p>
 
           <form onSubmit={submit} className="space-y-4">
@@ -78,7 +87,7 @@ export default function Auth() {
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
             </div>
-            {mode !== "forgot" && (
+            {mode !== "forgot" ? (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
@@ -90,11 +99,22 @@ export default function Auth() {
                 </div>
                 <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" />
               </div>
+            ) : (
+              <>
+                <div className="space-y-1.5">
+                  <Label htmlFor="password">New password</Label>
+                  <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirmPassword">Confirm password</Label>
+                  <Input id="confirmPassword" type="password" required minLength={8} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                </div>
+              </>
             )}
 
             <Button type="submit" disabled={busy} className="w-full font-medium">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
+              {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Reset password"}
             </Button>
           </form>
 
