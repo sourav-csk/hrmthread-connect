@@ -87,7 +87,7 @@ export default function Auth() {
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
             </div>
-            {mode !== "forgot" && (
+            {mode !== "forgot" ? (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
@@ -99,11 +99,22 @@ export default function Auth() {
                 </div>
                 <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" />
               </div>
+            ) : (
+              <>
+                <div className="space-y-1.5">
+                  <Label htmlFor="password">New password</Label>
+                  <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirmPassword">Confirm password</Label>
+                  <Input id="confirmPassword" type="password" required minLength={8} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                </div>
+              </>
             )}
 
             <Button type="submit" disabled={busy} className="w-full font-medium">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
+              {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Reset password"}
             </Button>
           </form>
 
