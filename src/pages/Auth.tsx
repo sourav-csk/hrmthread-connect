@@ -15,6 +15,7 @@ export default function Auth() {
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -24,13 +25,21 @@ export default function Auth() {
     e.preventDefault();
     setBusy(true);
     if (mode === "forgot") {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/reset-password`,
+      if (password !== confirmPassword) {
+        setBusy(false);
+        toast.error("Passwords do not match");
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke("reset-password-direct", {
+        body: { email: email.trim(), newPassword: password },
       });
       setBusy(false);
-      if (error) toast.error(error.message);
-      else {
-        toast.success("Reset link sent. Check your email.");
+      if (error || (data as any)?.error) {
+        toast.error((data as any)?.error || error?.message || "Reset failed");
+      } else {
+        toast.success("Password updated. Please sign in.");
+        setPassword("");
+        setConfirmPassword("");
         setMode("signin");
       }
       return;
@@ -64,7 +73,7 @@ export default function Auth() {
               ? "Welcome back to HRMSpine"
               : mode === "signup"
               ? "Start managing your workday"
-              : "We'll email you a secure reset link"}
+              : "Enter your email and a new password"}
           </p>
 
           <form onSubmit={submit} className="space-y-4">
